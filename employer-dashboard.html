@@ -621,6 +621,15 @@
             section.style.display = "none";
           });
 
+          // Logout functionality
+document.getElementById('logout').addEventListener('click', function(e) {
+    e.preventDefault();
+    // Clear any user session data if needed
+    localStorage.removeItem('currentEmployer');
+    // Redirect to login page
+    window.location.href = 'login.html'; // Change to your actual login page URL
+});
+
           // Show the selected section
           const target = this.getAttribute("href");
           if (target && target.startsWith("#")) {
