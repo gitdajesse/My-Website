@@ -974,6 +974,15 @@
           container.appendChild(card);
         });
 
+        // Logout functionality
+document.getElementById('logout').addEventListener('click', function(e) {
+    e.preventDefault();
+    // Clear any user session data if needed
+    localStorage.removeItem('currentSeeker');
+    // Redirect to login page
+    window.location.href = 'login.html'; // Change to your actual login page URL
+});
+
         // Update the apply button event listener
         document.querySelectorAll(".apply-btn").forEach((btn) => {
           btn.addEventListener("click", function (e) {
