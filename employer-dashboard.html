@@ -427,6 +427,76 @@
     </div>
 
     <script>
+      // Add this at the beginning of your script section
+      document.addEventListener("DOMContentLoaded", function () {
+        // Check if user is logged in
+        const currentUser = JSON.parse(localStorage.getItem("currentEmployer"));
+        if (!currentUser) {
+          window.location.href = "login.html"; // Redirect to login if not logged in
+          return;
+        }
+
+        // Set the company name if available
+        if (currentUser.companyName) {
+          document.getElementById("companyName").value =
+            currentUser.companyName;
+          document.getElementById("userName").textContent =
+            currentUser.companyName;
+        }
+
+        // Handle logout
+        document
+          .getElementById("logout")
+          .addEventListener("click", function (e) {
+            e.preventDefault();
+
+            // Get the current user's credentials from localStorage
+            const users = JSON.parse(localStorage.getItem("employers")) || [];
+            const currentUser = JSON.parse(
+              localStorage.getItem("currentEmployer")
+            );
+
+            if (currentUser) {
+              // Update the user's credentials in the employers array
+              const updatedUsers = users.map((user) => {
+                if (user.email === currentUser.email) {
+                  return {
+                    ...user,
+                    // Save any updated profile information
+                    companyName: document.getElementById("companyName").value,
+                    companyDescription:
+                      document.getElementById("companyDescription").value,
+                    companyPhone: document.getElementById("companyPhone").value,
+                    companyLocation:
+                      document.getElementById("companyLocation").value,
+                    companyWebsite:
+                      document.getElementById("companyWebsite").value,
+                  };
+                }
+                return user;
+              });
+
+              // Save the updated users array
+              localStorage.setItem("employers", JSON.stringify(updatedUsers));
+            }
+
+            // Remove current user from localStorage
+            localStorage.removeItem("currentEmployer");
+
+            // Redirect to login page
+            window.location.href = "login.html";
+          });
+
+        // Rest of your existing DOMContentLoaded code...
+        // Load existing jobs from localStorage
+        let jobs = JSON.parse(localStorage.getItem("jobs")) || [];
+
+        // Handle job posting form
+        document
+          .getElementById("postJobForm")
+          .addEventListener("submit", function (e) {
+            // Your existing job posting code...
+          });
       // employer.html
       document.addEventListener("DOMContentLoaded", function () {
         // Load existing jobs from localStorage
