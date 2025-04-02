@@ -615,74 +615,7 @@
         <section id="jobs" class="dashboard-section jobs-section">
           <h2><i class=""></i> Jobs I Can Apply To</h2>
           <div class="job-listings">
-            <div class="job-card">
-              <h3>Senior Frontend Developer</h3>
-              <p class="company"><i class=""></i> TechCorp Solutions</p>
-              <div class="details">
-                <span class="detail"><i class=""></i> San Francisco, CA</span>
-                <span class="detail salary"
-                  ><i class=""></i> $120,000 - $150,000</span
-                >
-                <span class="type">Full-time</span>
-                <span class="status">Open</span>
-              </div>
-              <p class="description">
-                We're looking for an experienced frontend developer to lead our
-                web development team...
-              </p>
-              <div class="actions">
-                <button class="btn btn-outline">View Details</button>
-                <button class="btn btn-primary apply-btn" data-job-id="1">
-                  Apply Now
-                </button>
-              </div>
-            </div>
-
-            <div class="job-card">
-              <h3>UX/UI Designer</h3>
-              <p class="company"><i class=""></i> Creative Minds LLC</p>
-              <div class="details">
-                <span class="detail"><i class=""></i> Remote</span>
-                <span class="detail salary"
-                  ><i class=""></i> $90,000 - $110,000</span
-                >
-                <span class="type">Full-time</span>
-                <span class="status">Open</span>
-              </div>
-              <p class="description">
-                Join our design team to create beautiful and functional user
-                experiences...
-              </p>
-              <div class="actions">
-                <button class="btn btn-outline">View Details</button>
-                <button class="btn btn-primary apply-btn" data-job-id="2">
-                  Apply Now
-                </button>
-              </div>
-            </div>
-
-            <div class="job-card">
-              <h3>Backend Engineer</h3>
-              <p class="company"><i class=""></i> DataSystems Inc.</p>
-              <div class="details">
-                <span class="detail"><i class=""></i> New York, NY</span>
-                <span class="detail salary"
-                  ><i class=""></i> $130,000 - $160,000</span
-                >
-                <span class="type">Full-time</span>
-                <span class="status filled">Filled</span>
-              </div>
-              <p class="description">
-                Looking for a backend engineer to develop and maintain our
-                server infrastructure...
-              </p>
-              <div class="actions">
-                <button class="btn btn-outline">View Details</button>
-                <button class="btn btn-primary" disabled>
-                  Already Applied
-                </button>
-              </div>
-            </div>
+            <!-- Jobs will be dynamically loaded here -->
           </div>
         </section>
 
@@ -692,19 +625,7 @@
         >
           <h2><i class=""></i> Jobs I Applied To</h2>
           <div class="job-listings">
-            <div class="job-card">
-              <h3>Backend Engineer</h3>
-              <p class="company"><i class=""></i> DataSystems Inc.</p>
-              <div class="details">
-                <span class="detail"><i class=""></i> New York, NY</span>
-                <span class="detail salary"
-                  ><i class=""></i> $130,000 - $160,000</span
-                >
-                <span class="type">Full-time</span>
-                <span class="status">They're looking at it</span>
-              </div>
-              <p class="description">Applied on: June 15, 2023</p>
-            </div>
+            <!-- Applications will be dynamically loaded here -->
           </div>
         </section>
       </main>
@@ -770,31 +691,216 @@
         </div>
         <button id="applyJobBtn" class="btn btn-primary">Apply Now</button>
       </div>
-      <!-- Add this modal for application confirmation -->
-      <div class="modal" id="applicationModal">
-        <div class="modal-content">
-          <span class="close">&times;</span>
-          <h2>Application Submitted</h2>
-          <p>Your application has been successfully submitted!</p>
-          <button id="closeApplicationModal" class="btn btn-primary">OK</button>
-        </div>
+    </div>
+
+    <!-- Application Confirmation Modal -->
+    <div class="modal" id="applicationModal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Application Submitted</h2>
+        <p>Your application has been successfully submitted!</p>
+        <button id="closeApplicationModal" class="btn btn-primary">OK</button>
       </div>
     </div>
 
     <script>
-      // Simple application tracking
-      let applications = [
-        {
-          id: 3,
-          title: "Backend Engineer",
-          company: "DataSystems Inc.",
-          location: "New York, NY",
-          salary: "$130,000 - $160,000",
-          type: "Full-time",
-          status: "They're looking at it",
-          appliedDate: "June 15, 2023",
-        },
-      ];
+      // Update the job seeker's view of available jobs
+      function updateJobSeekerJobListings() {
+        const jobs = JSON.parse(localStorage.getItem("jobs")) || [];
+        const container = document.querySelector(".jobs-section .job-listings");
+        container.innerHTML = "";
+
+        // Filter only open jobs
+        const openJobs = jobs.filter((job) => job.status === "open");
+
+        openJobs.forEach((job) => {
+          const jobCard = document.createElement("div");
+          jobCard.className = "job-card";
+          jobCard.innerHTML = `
+                  <h3>${job.title}</h3>
+                  <p class="company"><i class="fas fa-building"></i> ${
+                    job.company
+                  }</p>
+                  <div class="details">
+                      <span class="detail"><i class="fas fa-map-marker-alt"></i> ${
+                        job.location
+                      }</span>
+                      <span class="detail salary"><i class="fas fa-money-bill-wave"></i> ${
+                        job.salary
+                      }</span>
+                      <span class="type">${job.type}</span>
+                      <span class="status">Open</span>
+                  </div>
+                  <p class="description">${job.description.substring(
+                    0,
+                    100
+                  )}...</p>
+                  <div class="actions">
+                      <button class="btn btn-outline view-details-btn" data-job-id="${
+                        job.id
+                      }">View Details</button>
+                      <button class="btn btn-primary apply-btn" data-job-id="${
+                        job.id
+                      }">
+                          Apply Now
+                      </button>
+                  </div>
+              `;
+          container.appendChild(jobCard);
+        });
+
+        // Add event listeners
+        document.querySelectorAll(".apply-btn").forEach((btn) => {
+          btn.addEventListener("click", function (e) {
+            applyForJob(this.getAttribute("data-job-id"));
+          });
+        });
+
+        document.querySelectorAll(".view-details-btn").forEach((btn) => {
+          btn.addEventListener("click", function (e) {
+            showJobDetails(this.getAttribute("data-job-id"));
+          });
+        });
+      }
+
+      function applyForJob(jobId) {
+        const jobs = JSON.parse(localStorage.getItem("jobs")) || [];
+        const job = jobs.find((j) => j.id == jobId);
+
+        if (!job) {
+          alert("Job not found!");
+          return;
+        }
+
+        // Get current user
+        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+        // Create application
+        const application = {
+          id: Date.now(),
+          jobId: jobId,
+          title: job.title,
+          company: job.company,
+          location: job.location,
+          salary: job.salary,
+          type: job.type,
+          status: "pending",
+          appliedDate: new Date().toLocaleDateString(),
+          seekerName: currentUser.name || "Anonymous",
+          seekerEmail: currentUser.email,
+          seekerPhone: currentUser.phone || "",
+          seekerSkills: currentUser.skills || [],
+        };
+
+        // Get existing applications
+        let applications =
+          JSON.parse(localStorage.getItem("applications")) || [];
+
+        // Add new application
+        applications.push(application);
+
+        // Save to localStorage
+        localStorage.setItem("applications", JSON.stringify(applications));
+
+        // Update UI
+        const applyBtn = document.querySelector(
+          `.apply-btn[data-job-id="${jobId}"]`
+        );
+        if (applyBtn) {
+          applyBtn.textContent = "Applied!";
+          applyBtn.disabled = true;
+        }
+
+        // Show confirmation modal
+        document.getElementById("applicationModal").classList.add("active");
+
+        // Update applications list
+        updateApplicationsUI();
+      }
+
+      function showJobDetails(jobId) {
+        const jobs = JSON.parse(localStorage.getItem("jobs")) || [];
+        const job = jobs.find((j) => j.id == jobId);
+
+        if (!job) {
+          alert("Job details not found!");
+          return;
+        }
+
+        // Populate modal with job details
+        document.getElementById("modalJobTitle").textContent = job.title;
+        document.getElementById("modalJobCompany").textContent = job.company;
+        document.getElementById("modalJobLocation").textContent = job.location;
+        document.getElementById("modalJobSalary").textContent = job.salary;
+        document.getElementById("modalJobType").textContent = job.type;
+        document.getElementById("modalJobPosted").textContent =
+          job.postedDate || "Recently";
+        document.getElementById("modalJobDescription").innerHTML =
+          job.description;
+
+        // Set up apply button in modal
+        const applyBtn = document.getElementById("applyJobBtn");
+        applyBtn.setAttribute("data-job-id", jobId);
+        applyBtn.textContent = "Apply Now";
+        applyBtn.disabled = false;
+
+        // Check if already applied
+        const applications =
+          JSON.parse(localStorage.getItem("applications")) || [];
+        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+        const hasApplied = applications.some(
+          (app) => app.jobId == jobId && app.seekerEmail === currentUser.email
+        );
+
+        if (hasApplied) {
+          applyBtn.textContent = "Already Applied";
+          applyBtn.disabled = true;
+        }
+
+        // Show modal
+        document.getElementById("jobModal").classList.add("active");
+      }
+
+      function updateApplicationsUI() {
+        const container = document.querySelector(
+          ".applications-section .job-listings"
+        );
+        container.innerHTML = "";
+
+        // Get applications for current user
+        const applications =
+          JSON.parse(localStorage.getItem("applications")) || [];
+        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+        if (!currentUser) return;
+
+        // Filter applications by current user
+        const userApplications = applications.filter(
+          (app) => app.seekerEmail === currentUser.email
+        );
+
+        if (userApplications.length === 0) {
+          container.innerHTML = "<p>You haven't applied to any jobs yet.</p>";
+          return;
+        }
+
+        userApplications.forEach((app) => {
+          const card = document.createElement("div");
+          card.className = "job-card";
+          card.innerHTML = `
+                  <h3>${app.title}</h3>
+                  <p class="company"><i class="fas fa-building"></i> ${app.company}</p>
+                  <div class="details">
+                      <span class="detail"><i class="fas fa-map-marker-alt"></i> ${app.location}</span>
+                      <span class="detail salary"><i class="fas fa-money-bill-wave"></i> ${app.salary}</span>
+                      <span class="type">${app.type}</span>
+                      <span class="status">${app.status}</span>
+                  </div>
+                  <p class="description">Applied on: ${app.appliedDate}</p>
+              `;
+          container.appendChild(card);
+        });
+      }
 
       // Navigation between sections
       document
@@ -825,6 +931,7 @@
             .querySelector(".sidebar li.active")
             .classList.remove("active");
           this.parentElement.classList.add("active");
+          updateJobSeekerJobListings();
         });
 
       document
@@ -840,6 +947,7 @@
             .querySelector(".sidebar li.active")
             .classList.remove("active");
           this.parentElement.classList.add("active");
+          updateApplicationsUI();
         });
 
       document
@@ -858,26 +966,39 @@
         });
 
       // Modal functionality
-      const modal = document.getElementById("jobModal");
-      const closeBtn = document.querySelector(".close");
+      const jobModal = document.getElementById("jobModal");
+      const applicationModal = document.getElementById("applicationModal");
+      const closeBtns = document.querySelectorAll(".close");
 
-      document
-        .querySelectorAll(".job-card .btn-outline:first-child")
-        .forEach((btn) => {
-          btn.addEventListener("click", function () {
-            modal.classList.add("active");
-          });
+      closeBtns.forEach((btn) => {
+        btn.addEventListener("click", function () {
+          jobModal.classList.remove("active");
+          applicationModal.classList.remove("active");
         });
-
-      closeBtn.addEventListener("click", function () {
-        modal.classList.remove("active");
       });
 
       window.addEventListener("click", function (e) {
-        if (e.target === modal) {
-          modal.classList.remove("active");
+        if (e.target === jobModal || e.target === applicationModal) {
+          jobModal.classList.remove("active");
+          applicationModal.classList.remove("active");
         }
       });
+
+      // Apply from modal
+      document
+        .getElementById("applyJobBtn")
+        .addEventListener("click", function () {
+          const jobId = this.getAttribute("data-job-id");
+          applyForJob(jobId);
+          jobModal.classList.remove("active");
+        });
+
+      // Close application modal
+      document
+        .getElementById("closeApplicationModal")
+        .addEventListener("click", function () {
+          applicationModal.classList.remove("active");
+        });
 
       // Add skill functionality
       document
@@ -889,8 +1010,8 @@
             const newSkill = document.createElement("div");
             newSkill.className = "skill-tag";
             newSkill.innerHTML = `
-            ${input.value.trim()} <button type="button"><i class=""></i></button>
-          `;
+                  ${input.value.trim()} <button type="button"><i class="fas fa-times"></i></button>
+              `;
             skillsContainer.insertBefore(
               newSkill,
               document.querySelector(".add-skill")
@@ -906,238 +1027,80 @@
           }
         });
 
-      // Apply for job functionality
-      document.querySelectorAll(".apply-btn").forEach((btn) => {
-        btn.addEventListener("click", function (e) {
-          e.preventDefault();
-          const jobId = this.getAttribute("data-job-id");
-          const jobCard = this.closest(".job-card");
-          const jobTitle = jobCard.querySelector("h3").textContent;
-          const company = jobCard.querySelector(".company").textContent;
-          const details = jobCard.querySelectorAll(".detail");
+      // Load current user data
+      function loadUserData() {
+        const currentUser =
+          JSON.parse(localStorage.getItem("currentUser")) || {};
+        document.getElementById("fullName").value = currentUser.name || "";
+        document.getElementById("email").value = currentUser.email || "";
+        document.getElementById("phone").value = currentUser.phone || "";
+        document.getElementById("location").value = currentUser.location || "";
+        document.getElementById("userName").textContent =
+          currentUser.name || "Seeker name";
 
-          // Add to applications
-          applications.push({
-            id: jobId,
-            title: jobTitle,
-            company: company.replace("🏢 ", ""),
-            location: details[0].textContent,
-            salary: details[1].textContent,
-            type: jobCard.querySelector(".type").textContent,
-            status: "They're looking at it",
-            appliedDate: new Date().toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            }),
-          });
+        // Load skills if any
+        if (currentUser.skills && currentUser.skills.length > 0) {
+          const skillsContainer = document.querySelector(".skills-input");
+          currentUser.skills.forEach((skill) => {
+            const newSkill = document.createElement("div");
+            newSkill.className = "skill-tag";
+            newSkill.innerHTML = `
+                      ${skill} <button type="button"><i class="fas fa-times"></i></button>
+                  `;
+            skillsContainer.insertBefore(
+              newSkill,
+              document.querySelector(".add-skill")
+            );
 
-          // Update UI
-          this.textContent = "Applied!";
-          this.disabled = true;
-
-          // Show confirmation
-          alert(`You applied for ${jobTitle} at ${company}`);
-
-          // Update applications section
-          updateApplicationsUI();
-        });
-      });
-
-      // Update applications list
-      function updateApplicationsUI() {
-        const container = document.querySelector(
-          ".applications-section .job-listings"
-        );
-        container.innerHTML = "";
-
-        applications.forEach((app) => {
-          const card = document.createElement("div");
-          card.className = "job-card";
-          card.innerHTML = `
-            <h3>${app.title}</h3>
-            <p class="company">
-              <i class=""></i> ${app.company}
-            </p>
-            <div class="details">
-              <span class="detail"
-                ><i class=""></i> ${app.location}</span
-              >
-              <span class="detail salary"
-                ><i class=""></i> ${app.salary}</span
-              >
-              <span class="type">${app.type}</span>
-              <span class="status">${app.status}</span>
-            </div>
-            <p class="description">Applied on: ${app.appliedDate}</p>
-          `;
-          container.appendChild(card);
-        });
-
-        // Logout functionality
-document.getElementById('logout').addEventListener('click', function(e) {
-    e.preventDefault();
-    // Clear any user session data if needed
-    localStorage.removeItem('currentSeeker');
-    // Redirect to login page
-    window.location.href = 'login.html'; // Change to your actual login page URL
-});
-
-        // Update the apply button event listener
-        document.querySelectorAll(".apply-btn").forEach((btn) => {
-          btn.addEventListener("click", function (e) {
-            e.preventDefault();
-            const jobId = this.getAttribute("data-job-id");
-            const jobCard = this.closest(".job-card");
-            const jobTitle = jobCard.querySelector("h3").textContent;
-            const company = jobCard.querySelector(".company").textContent;
-            const details = jobCard.querySelectorAll(".detail");
-
-            // Create application object
-            const application = {
-              id: Date.now(),
-              jobId: jobId,
-              title: jobTitle,
-              company: company.replace("🏢 ", ""),
-              location: details[0].textContent,
-              salary: details[1].textContent,
-              type: jobCard.querySelector(".type").textContent,
-              status: "pending",
-              appliedDate: new Date().toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              }),
-              seekerName:
-                document.getElementById("fullName").value || "Anonymous Seeker",
-              seekerEmail: document.getElementById("email").value || "",
-              seekerPhone: document.getElementById("phone").value || "",
-            };
-
-            // Get existing applications from localStorage
-            let applications =
-              JSON.parse(localStorage.getItem("applications")) || [];
-
-            // Add new application
-            applications.push(application);
-            localStorage.setItem("applications", JSON.stringify(applications));
-
-            // Update UI
-            this.textContent = "Applied!";
-            this.disabled = true;
-
-            // Show confirmation modal
-            document.getElementById("applicationModal").classList.add("active");
-
-            // Update applications section
-            updateApplicationsUI();
-          });
-        });
-
-        // Close application modal
-        document
-          .getElementById("closeApplicationModal")
-          .addEventListener("click", function () {
-            document
-              .getElementById("applicationModal")
-              .classList.remove("active");
-          });
-
-        // Enhanced updateApplicationsUI function
-        function updateApplicationsUI() {
-          const container = document.querySelector(
-            ".applications-section .job-listings"
-          );
-          container.innerHTML = "";
-
-          // Get applications for current user
-          const applications =
-            JSON.parse(localStorage.getItem("applications")) || [];
-          const userEmail = document.getElementById("email").value;
-
-          // Filter applications by current user (assuming email is unique identifier)
-          const userApplications = applications.filter(
-            (app) => app.seekerEmail === userEmail
-          );
-
-          userApplications.forEach((app) => {
-            const card = document.createElement("div");
-            card.className = "job-card";
-            card.innerHTML = `
-      <h3>${app.title}</h3>
-      <p class="company"><i class=""></i> ${app.company}</p>
-      <div class="details">
-        <span class="detail"><i class=""></i> ${app.location}</span>
-        <span class="detail salary"><i class=""></i> ${app.salary}</span>
-        <span class="type">${app.type}</span>
-        <span class="status">${app.status}</span>
-      </div>
-      <p class="description">Applied on: ${app.appliedDate}</p>
-    `;
-            container.appendChild(card);
+            // Add event to remove button
+            newSkill
+              .querySelector("button")
+              .addEventListener("click", function () {
+                newSkill.remove();
+              });
           });
         }
-
-        // seeker.html
-        document.addEventListener("DOMContentLoaded", function () {
-          // Load jobs from localStorage
-          const jobs = JSON.parse(localStorage.getItem("jobs")) || [];
-
-          // Function to display jobs in "Jobs I Can Apply To"
-          function updateJobSeekerJobListings() {
-            const container = document.querySelector(
-              ".jobs-section .job-listings"
-            );
-            container.innerHTML = "";
-
-            jobs.forEach((job) => {
-              if (job.status === "open") {
-                // Only show open jobs
-                const jobCard = document.createElement("div");
-                jobCard.className = "job-card";
-                jobCard.innerHTML = `
-          <h3>${job.title}</h3>
-          <p class="company"><i class="fas fa-building"></i> ${job.company}</p>
-          <div class="details">
-            <span class="detail"><i class="fas fa-map-marker-alt"></i> ${
-              job.location
-            }</span>
-            <span class="detail salary"><i class="fas fa-money-bill-wave"></i> ${
-              job.salary
-            }</span>
-            <span class="type">${job.type}</span>
-            <span class="status">Open</span>
-          </div>
-          <p class="description">${job.description.substring(0, 100)}...</p>
-          <div class="actions">
-            <button class="btn btn-outline">View Details</button>
-            <button class="btn btn-primary apply-btn" data-job-id="${job.id}">
-              Apply Now
-            </button>
-          </div>
-        `;
-                container.appendChild(jobCard);
-              }
-            });
-          }
-
-          // Initialize job seeker listings
-          updateJobSeekerJobListings();
-
-          // Apply for job (simulate application)
-          document.addEventListener("click", function (e) {
-            if (e.target.classList.contains("apply-btn")) {
-              const jobId = parseInt(e.target.getAttribute("data-job-id"));
-              alert(`You applied for Job ID: ${jobId}`);
-              e.target.textContent = "Applied!";
-              e.target.disabled = true;
-            }
-          });
-        });
       }
 
-      // Initialize applications UI
-      updateApplicationsUI();
+      // Save profile data
+      document
+        .querySelector(".profile-form")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const currentUser =
+            JSON.parse(localStorage.getItem("currentUser")) || {};
+          currentUser.name = document.getElementById("fullName").value;
+          currentUser.email = document.getElementById("email").value;
+          currentUser.phone = document.getElementById("phone").value;
+          currentUser.location = document.getElementById("location").value;
+
+          // Get skills
+          const skillTags = document.querySelectorAll(".skill-tag");
+          currentUser.skills = Array.from(skillTags).map((tag) =>
+            tag.textContent.replace("×", "").trim()
+          );
+
+          localStorage.setItem("currentUser", JSON.stringify(currentUser));
+          document.getElementById("userName").textContent =
+            currentUser.name || "Seeker name";
+
+          alert("Profile saved successfully!");
+        });
+
+      // Initialize on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        loadUserData();
+        updateJobSeekerJobListings();
+        updateApplicationsUI();
+
+        // Set up logout
+        document
+          .getElementById("logout")
+          .addEventListener("click", function (e) {
+            localStorage.removeItem("currentUser");
+          });
+      });
     </script>
   </body>
 </html>
