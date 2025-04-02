@@ -462,9 +462,10 @@
             const currentEmployer = JSON.parse(
               localStorage.getItem("currentEmployer")
             );
+            const isEditMode = this.dataset.editMode === "true";
 
             const jobData = {
-              id: Date.now(),
+              id: isEditMode ? parseInt(this.dataset.jobId) : Date.now(),
               title: document.getElementById("jobTitle").value,
               description: document.getElementById("jobDescription").value,
               location: document.getElementById("jobLocation").value,
@@ -477,11 +478,23 @@
             };
 
             let jobs = JSON.parse(localStorage.getItem("jobs")) || [];
-            jobs.push(jobData);
-            localStorage.setItem("jobs", JSON.stringify(jobs));
 
-            alert("Job posted successfully!");
+            if (isEditMode) {
+              jobs = jobs.map((job) => (job.id === jobData.id ? jobData : job));
+            } else {
+              jobs.push(jobData);
+            }
+
+            localStorage.setItem("jobs", JSON.stringify(jobs));
+            alert(
+              isEditMode
+                ? "Job updated successfully!"
+                : "Job posted successfully!"
+            );
             this.reset();
+            delete this.dataset.editMode;
+            delete this.dataset.jobId;
+            this.querySelector("button").textContent = "Post Job";
             updateEmployerJobListings();
           });
 
@@ -513,9 +526,10 @@
             </div>
             <div class="form-row">
               <p><strong>Type:</strong> ${job.type}</p>
-              <p><strong>Status:</strong> <span class="status-${job.status}">${
-              job.status
-            }</span></p>
+              <p><strong>Status:</strong> <span class="status-${job.status.replace(
+                " ",
+                "-"
+              )}">${job.status}</span></p>
             </div>
             <div class="job-actions">
               <button class="btn btn-primary edit-btn" data-job-id="${
@@ -682,8 +696,26 @@
           .getElementById("companyProfileForm")
           .addEventListener("submit", function (e) {
             e.preventDefault();
+
+            const currentEmployer =
+              JSON.parse(localStorage.getItem("currentEmployer")) || {};
+            const updatedProfile = {
+              ...currentEmployer,
+              companyName: document.getElementById("companyName").value,
+              companyDescription:
+                document.getElementById("companyDescription").value,
+              companyPhone: document.getElementById("companyPhone").value,
+              companyLocation: document.getElementById("companyLocation").value,
+              companyWebsite: document.getElementById("companyWebsite").value,
+            };
+
+            localStorage.setItem(
+              "currentEmployer",
+              JSON.stringify(updatedProfile)
+            );
+            document.getElementById("userName").textContent =
+              updatedProfile.companyName;
             alert("Company profile saved successfully!");
-            // In a real app, you would send this data to your backend
           });
 
         // Navigation highlighting
@@ -700,6 +732,7 @@
               .forEach((section) => {
                 section.style.display = "none";
               });
+            document.querySelector(".dashboard-header").style.display = "block";
 
             // Show the selected section
             const target = this.getAttribute("href");
