@@ -9,49 +9,6 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
     <style>
-      /* Add these styles for the application cards */
-      .application-card {
-        background-color: white;
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        border-left: 4px solid var(--primary);
-      }
-
-      .applicant-info {
-        margin: 1rem 0;
-        padding: 1rem;
-        background-color: #f8fafc;
-        border-radius: 6px;
-      }
-
-      .application-actions {
-        display: flex;
-        gap: 1rem;
-        margin-top: 1rem;
-      }
-
-      .btn-danger {
-        background-color: var(--danger);
-        color: white;
-      }
-
-      .btn-danger:hover {
-        background-color: #dc2626;
-      }
-
-      .status-pending {
-        color: var(--secondary);
-      }
-
-      .status-accepted {
-        color: var(--success);
-      }
-
-      .status-rejected {
-        color: var(--danger);
-      }
       * {
         margin: 0;
         padding: 0;
@@ -209,14 +166,22 @@
         background-color: #2980b9;
       }
 
+      .btn-danger {
+        background-color: #e74c3c;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background-color: #dc2626;
+      }
+
       .job-listings,
       .applications-list {
         display: grid;
         gap: 15px;
       }
 
-      .job-card,
-      .application-card {
+      .job-card {
         background-color: #f9f9f9;
         padding: 15px;
         border-radius: 5px;
@@ -229,16 +194,55 @@
         margin-top: 10px;
       }
 
+      /* Application cards styles */
+      .application-card {
+        background-color: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #4f46e5;
+        transition: all 0.2s ease;
+      }
+
+      .application-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+
+      .applicant-info {
+        background-color: #f8fafc;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+      }
+
+      .application-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      /* Status styles */
       .status-pending {
-        color: #f39c12;
+        background-color: #fef3c7;
+        color: #d97706;
+        padding: 2px 8px;
+        border-radius: 4px;
       }
 
       .status-accepted {
-        color: #2ecc71;
+        background-color: #d1fae5;
+        color: #059669;
+        padding: 2px 8px;
+        border-radius: 4px;
       }
 
       .status-rejected {
-        color: #e74c3c;
+        background-color: #fee2e2;
+        color: #dc2626;
+        padding: 2px 8px;
+        border-radius: 4px;
       }
     </style>
   </head>
@@ -395,21 +399,15 @@
     </div>
 
     <script>
-      <!--document.addEventListener("DOMContentLoaded", function () {
-        // Check if user is logged in
-        const currentUser = JSON.parse(localStorage.getItem("currentEmployer"));
-        if (!currentUser) {
-          window.location.href = "login.html"; // Redirect to login if not logged in
-          return;
-        }-->
-
-
+      document.addEventListener("DOMContentLoaded", function () {
         // Set the company name if available
-        if (currentUser.companyName) {
+        const currentEmployer =
+          JSON.parse(localStorage.getItem("currentEmployer")) || {};
+        if (currentEmployer.companyName) {
           document.getElementById("companyName").value =
-            currentUser.companyName;
+            currentEmployer.companyName;
           document.getElementById("userName").textContent =
-            currentUser.companyName;
+            currentEmployer.companyName;
         }
 
         // Handle logout
@@ -455,61 +453,44 @@
             window.location.href = "login.html";
           });
 
-        // Handle job posting form
+        // Update the postJobForm submit handler
         document
           .getElementById("postJobForm")
           .addEventListener("submit", function (e) {
             e.preventDefault();
 
+            const currentEmployer = JSON.parse(
+              localStorage.getItem("currentEmployer")
+            );
+
             const jobData = {
+              id: Date.now(),
               title: document.getElementById("jobTitle").value,
               description: document.getElementById("jobDescription").value,
               location: document.getElementById("jobLocation").value,
               salary: document.getElementById("jobSalary").value,
               type: document.getElementById("jobType").value,
               status: document.getElementById("jobStatus").value,
-              company:
-                document.getElementById("companyName").value || "My Company",
+              company: currentEmployer.companyName || "My Company",
+              postedDate: new Date().toLocaleDateString(),
+              employerId: currentEmployer.email,
             };
 
             let jobs = JSON.parse(localStorage.getItem("jobs")) || [];
-
-            if (this.dataset.editMode === "true") {
-              // Update existing job
-              const jobId = parseInt(this.dataset.jobId);
-              const jobIndex = jobs.findIndex((j) => j.id === jobId);
-
-              if (jobIndex !== -1) {
-                jobs[jobIndex] = { ...jobs[jobIndex], ...jobData };
-                alert("Job updated successfully!");
-              }
-            } else {
-              // Create new job
-              const newJob = {
-                id: Date.now(),
-                ...jobData,
-                postedDate: new Date().toLocaleDateString(),
-                employerId: JSON.parse(localStorage.getItem("currentEmployer"))
-                  .email,
-              };
-              jobs.push(newJob);
-              alert("Job posted successfully!");
-            }
-
+            jobs.push(jobData);
             localStorage.setItem("jobs", JSON.stringify(jobs));
-            updateEmployerJobListings();
 
-            // Reset form
+            alert("Job posted successfully!");
             this.reset();
-            delete this.dataset.editMode;
-            delete this.dataset.jobId;
-            this.querySelector("button").textContent = "Post Job";
+            updateEmployerJobListings();
           });
 
-        // Function to update employer's job listings
+        // Enhanced updateEmployerJobListings function
         function updateEmployerJobListings() {
+          const currentEmployer = JSON.parse(
+            localStorage.getItem("currentEmployer")
+          );
           const jobs = JSON.parse(localStorage.getItem("jobs")) || [];
-          const companyName = document.getElementById("companyName").value;
           const container = document.querySelector(
             "#manage-jobs .job-listings"
           );
@@ -517,28 +498,34 @@
 
           // Filter jobs for this employer
           const employerJobs = jobs.filter(
-            (job) => job.company === companyName
+            (job) => job.employerId === currentEmployer.email
           );
 
           employerJobs.forEach((job) => {
             const jobCard = document.createElement("div");
             jobCard.className = "job-card";
             jobCard.innerHTML = `
-                    <h3>${job.title}</h3>
-                    <p>${job.description}</p>
-                    <div class="form-row">
-                        <p><strong>Location:</strong> ${job.location}</p>
-                        <p><strong>Salary:</strong> ${job.salary}</p>
-                    </div>
-                    <div class="form-row">
-                        <p><strong>Type:</strong> ${job.type}</p>
-                        <p><strong>Status:</strong> <span class="status-${job.status}">${job.status}</span></p>
-                    </div>
-                    <div class="job-actions">
-                        <button class="btn btn-primary edit-btn" data-job-id="${job.id}">Edit</button>
-                        <button class="btn btn-danger delete-btn" data-job-id="${job.id}">Delete</button>
-                    </div>
-                `;
+            <h3>${job.title}</h3>
+            <p>${job.description.substring(0, 100)}...</p>
+            <div class="form-row">
+              <p><strong>Location:</strong> ${job.location}</p>
+              <p><strong>Salary:</strong> ${job.salary}</p>
+            </div>
+            <div class="form-row">
+              <p><strong>Type:</strong> ${job.type}</p>
+              <p><strong>Status:</strong> <span class="status-${job.status}">${
+              job.status
+            }</span></p>
+            </div>
+            <div class="job-actions">
+              <button class="btn btn-primary edit-btn" data-job-id="${
+                job.id
+              }">Edit</button>
+              <button class="btn btn-danger delete-btn" data-job-id="${
+                job.id
+              }">Delete</button>
+            </div>
+          `;
             container.appendChild(jobCard);
           });
 
@@ -597,56 +584,80 @@
           localStorage.setItem("applications", JSON.stringify(applications));
         }
 
-        // Function to display applications
+        // Enhanced updateApplicationStatus function
+        function updateApplicationStatus(appId, status) {
+          let applications =
+            JSON.parse(localStorage.getItem("applications")) || [];
+          applications = applications.map((app) => {
+            if (app.id == appId) {
+              return { ...app, status: status };
+            }
+            return app;
+          });
+
+          localStorage.setItem("applications", JSON.stringify(applications));
+          updateEmployerApplications();
+
+          // In a real app, you would send a notification to the seeker
+          alert(`Application status updated to ${status}`);
+        }
+
+        // Enhanced updateEmployerApplications function
         function updateEmployerApplications() {
           const container = document.getElementById("applicationsList");
           container.innerHTML = "";
 
-          // Get all applications
+          const currentEmployer = JSON.parse(
+            localStorage.getItem("currentEmployer")
+          );
           const applications =
             JSON.parse(localStorage.getItem("applications")) || [];
 
-          // Get current employer's jobs (assuming company name is unique identifier)
-          const jobs = JSON.parse(localStorage.getItem("jobs")) || [];
-          const companyName = document.getElementById("companyName").value;
-          const employerJobs = jobs.filter(
-            (job) => job.company === companyName
-          );
-
           // Filter applications for this employer's jobs
-          const employerApplications = applications.filter((app) =>
-            employerJobs.some(
-              (job) => job.title === app.title && job.company === app.company
-            )
+          const employerApplications = applications.filter(
+            (app) => app.employerId === currentEmployer.email
           );
 
           employerApplications.forEach((app) => {
             const card = document.createElement("div");
             card.className = "application-card";
             card.innerHTML = `
-          <h3>${app.seekerName} - ${app.title}</h3>
-          <p><strong>Company:</strong> ${app.company}</p>
-          <p><strong>Applied:</strong> ${app.appliedDate}</p>
-          <p><strong>Status:</strong>
-            <span class="status-${app.status}">${app.status}</span>
-          </p>
-          <div class="applicant-info">
-            <p><strong>Email:</strong> ${app.seekerEmail}</p>
-            <p><strong>Phone:</strong> ${app.seekerPhone}</p>
-          </div>
-          <div class="application-actions">
-            <button class="btn btn-primary accept-btn" data-app-id="${app.id}">
-              Accept
-            </button>
-            <button class="btn btn-danger reject-btn" data-app-id="${app.id}">
-              Reject
-            </button>
-          </div>
-        `;
+            <h3>${app.seekerName} - ${app.title}</h3>
+            <p><strong>Company:</strong> ${app.company}</p>
+            <p><strong>Applied:</strong> ${app.appliedDate}</p>
+            <p><strong>Status:</strong> 
+              <span class="status-${app.status}">${app.status}</span>
+            </p>
+            <div class="applicant-info">
+              <p><strong>Email:</strong> ${app.seekerEmail}</p>
+              <p><strong>Phone:</strong> ${app.seekerPhone}</p>
+              ${
+                app.seekerSkills
+                  ? `<p><strong>Skills:</strong> ${app.seekerSkills.join(
+                      ", "
+                    )}</p>`
+                  : ""
+              }
+            </div>
+            ${
+              app.status === "pending"
+                ? `
+            <div class="application-actions">
+              <button class="btn btn-primary accept-btn" data-app-id="${app.id}">
+                Accept
+              </button>
+              <button class="btn btn-danger reject-btn" data-app-id="${app.id}">
+                Reject
+              </button>
+            </div>
+            `
+                : ""
+            }
+          `;
             container.appendChild(card);
           });
 
-          // Add event listeners for accept/reject buttons
+          // Add event listeners
           document.querySelectorAll(".accept-btn").forEach((btn) => {
             btn.addEventListener("click", function () {
               updateApplicationStatus(
@@ -664,27 +675,6 @@
               );
             });
           });
-        }
-
-        // Function to update application status
-        function updateApplicationStatus(appId, status) {
-          const applications =
-            JSON.parse(localStorage.getItem("applications")) || [];
-          const updatedApplications = applications.map((app) => {
-            if (app.id == appId) {
-              return { ...app, status: status };
-            }
-            return app;
-          });
-
-          localStorage.setItem(
-            "applications",
-            JSON.stringify(updatedApplications)
-          );
-          updateEmployerApplications();
-
-          // In a real app, you would notify the seeker here
-          alert(`Application status updated to ${status}`);
         }
 
         // Simple form handling for demonstration
@@ -725,7 +715,7 @@
 
         // Show dashboard by default
         document.querySelector("nav li.active a").click();
-      ;
+      });
     </script>
   </body>
 </html>
